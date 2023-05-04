@@ -15,7 +15,10 @@ from src.deep_q_network import DeepQNetwork
 from src.flappy_bird import FlappyBird
 from src.utils import pre_processing
 
-
+device = "cuda" if torch.cuda.is_available() \
+                      else "mps" if torch.backends.mps.is_available() \
+                      else "cpu"
+print("Training on {}".format(device))
 def get_args():
     parser = argparse.ArgumentParser(
         """Implementation of Deep Q Network to play Flappy Bird""")
@@ -26,7 +29,7 @@ def get_args():
     parser.add_argument("--gamma", type=float, default=0.99)
     parser.add_argument("--initial_epsilon", type=float, default=0.1)
     parser.add_argument("--final_epsilon", type=float, default=1e-4)
-    parser.add_argument("--num_iters", type=int, default=2000000)
+    parser.add_argument("--num_iters", type=int, default=20000)
     parser.add_argument("--replay_memory_size", type=int, default=50000,
                         help="Number of epoches between testing phases")
     parser.add_argument("--log_path", type=str, default="tensorboard")
@@ -51,11 +54,14 @@ def train(opt):
     game_state = FlappyBird()
     image, reward, terminal = game_state.next_frame(0)
     image = pre_processing(image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size, opt.image_size)
-    image = torch.from_numpy(image)
-    if torch.cuda.is_available():
-        model.cuda()
-        image = image.cuda()
-    state = torch.cat(tuple(image for _ in range(4)))[None, :, :, :]
+    image = torch.from_numpy(image) #(1, 84 ,84)
+    # if torch.cuda.is_available():
+    #     model.cuda()
+    #     image = image.cuda()
+    model.to(device)
+    image = image.to(device)
+    state = torch.cat(tuple(image for _ in range(3)))[None, :, :, :]
+    state = state.to(device) #(1,3,84,84)
 
     replay_memory = []
     iter = 0
@@ -70,14 +76,14 @@ def train(opt):
             print("Perform a random action")
             action = randint(0, 1)
         else:
-            action = torch.argmax(prediction)
-
+            action = torch.max(prediction, 0).indices.item()
         next_image, reward, terminal = game_state.next_frame(action)
         next_image = pre_processing(next_image[:game_state.screen_width, :int(game_state.base_y)], opt.image_size,
                                     opt.image_size)
         next_image = torch.from_numpy(next_image)
-        if torch.cuda.is_available():
-            next_image = next_image.cuda()
+        # if torch.cuda.is_available():
+        #     next_image = next_image.cuda()
+        next_image = next_image.to(device)
         next_state = torch.cat((state[0, 1:, :, :], next_image))[None, :, :, :]
         replay_memory.append([state, action, reward, next_state, terminal])
         if len(replay_memory) > opt.replay_memory_size:
@@ -91,11 +97,16 @@ def train(opt):
         reward_batch = torch.from_numpy(np.array(reward_batch, dtype=np.float32)[:, None])
         next_state_batch = torch.cat(tuple(state for state in next_state_batch))
 
-        if torch.cuda.is_available():
-            state_batch = state_batch.cuda()
-            action_batch = action_batch.cuda()
-            reward_batch = reward_batch.cuda()
-            next_state_batch = next_state_batch.cuda()
+        # if torch.cuda.is_available():
+        #     state_batch = state_batch.cuda()
+        #     action_batch = action_batch.cuda()
+        #     reward_batch = reward_batch.cuda()
+        #     next_state_batch = next_state_batch.cuda()
+        state_batch = state_batch.to(device)
+        action_batch = action_batch.to(device)
+        reward_batch = reward_batch.to(device)
+        next_state_batch = next_state_batch.to(device)
+
         current_prediction_batch = model(state_batch)
         next_prediction_batch = model(next_state_batch)
 
@@ -110,7 +121,7 @@ def train(opt):
         loss.backward()
         optimizer.step()
 
-        state = next_state
+        state = next_state #(1,3,84,84)
         iter += 1
         print("Iteration: {}/{}, Action: {}, Loss: {}, Epsilon {}, Reward: {}, Q-value: {}".format(
             iter + 1,
