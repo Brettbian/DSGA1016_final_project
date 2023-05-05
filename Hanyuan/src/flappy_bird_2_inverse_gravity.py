@@ -128,8 +128,8 @@ class FlappyBird(object):
         if self.is_flapped:
             self.is_flapped = False
         
+        # this part will remain the same
         self.bird_y += min(self.current_velocity_y, self.bird_y - self.current_velocity_y - self.bird_height)
-        
         if self.bird_y < 0:
             self.bird_y = 0
 
