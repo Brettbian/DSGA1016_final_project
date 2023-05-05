@@ -60,7 +60,7 @@ def train(opt):
     #     image = image.cuda()
     model.to(device)
     image = image.to(device)
-    state = torch.cat(tuple(image for _ in range(3)))[None, :, :, :]
+    state = torch.cat(tuple(image for _ in range(4)))[None, :, :, :]
     state = state.to(device) #(1,3,84,84)
 
     replay_memory = []
