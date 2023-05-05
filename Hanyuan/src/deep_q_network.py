@@ -27,7 +27,7 @@ class DeepQNetwork(nn.Module):
     def forward(self, input):
         output = self.conv1(input)
         output = self.conv2(output)
-        output = self.conv3(output)
+        output = self.conv3(output) #(64, H, W)
         # output = self.resnet(input)
         output = output.view(output.size(0), -1) #(batch_size, 1000)
         output = self.fc1(output)
