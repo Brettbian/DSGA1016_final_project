@@ -6,7 +6,7 @@ import torch
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_SPACE, K_UP
 
-from src.flappy_bird import FlappyBird
+from src.flappy_bird_inverse_gravity import FlappyBird
 from src.utils import pre_processing
 
 current_experiment_name = 'original name with pip gap 110'
@@ -123,7 +123,7 @@ def play(opt):
             # print('highest score up to now: {}'.format(highest_score_this_round))
     
     # After 20 rounds, write the scores to a txt file
-    with open('score_record/' + current_experiment_name + 'human scores.txt', 'w') as f:
+    with open('score_record/' + current_experiment_name + 'human scores.txt', 'a') as f:
         f.write(f"Player: {player_name}\n")
         for score in scores:
             f.write(f"{score}\n")
