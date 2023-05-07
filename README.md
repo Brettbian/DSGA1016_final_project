@@ -13,3 +13,5 @@ The OpenAI Gym: https://gym.openai.com/envs/#atari
 Dubey, R., Agrawal, P., Pathak, D., Griffiths, T. L., & Efros, A. A. (preprint). Investigating human priors for playing video games. In Proceedings of the 35th International Conference on Machine Learning (ICML 2018). https://rach0012.github.io/humanRL_website/ (paper and project website)
 
 Flappy-bird-deep-Q-learning-pytorch: https://github.com/uvipen/Flappy-bird-deep-Q-learning-pytorch
+
+TensorboardX: https://github.com/lanpa/tensorboardX
